@@ -4,162 +4,75 @@
     <style></style>
   </head>
   <body>
-    <div class="controls">
-      <div class="force alpha">
-	<p><label>alpha</label> Simulation activity</p>
-	<div class="alpha_bar" onclick="updateAll(data, forceProperties, sizeVar.width, sizeVar.height);"><div id="alpha_value"></div></div>
-      </div>
-      <div class="force">
-	<p><label>center</label> Shifts the view, so the graph is centered at this location.</p>
-	<label>
-	  x
-	  <output id="center_XSliderOutput">.5</output>
-	  <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#center_XSliderOutput').text(value); forceProperties.center.x=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-	<label>
-	  y
-	  <output id="center_YSliderOutput">.5</output>
-	  <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#center_YSliderOutput').text(value); forceProperties.center.y=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-      </div>
-
-      <div class="force">
-	<p><label><input type="checkbox" checked onchange="forceProperties.charge.enabled = this.checked; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);"> charge</label> Attracts (+) or repels (-) nodes to/from each other.</p>
-	<label title="Negative strength repels nodes. Positive strength attracts nodes.">
-	  strength
-	  <output id="charge_StrengthSliderOutput">-30</output>
-	  <input type="range" min="-200" max="50" value="-30" step=".1" oninput="d3.select('#charge_StrengthSliderOutput').text(value); forceProperties.charge.strength=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-	<label title="Minimum distance where force is applied">
-	  distanceMin
-	  <output id="charge_distanceMinSliderOutput">1</output>
-	  <input type="range" min="0" max="50" value="1" step=".1" oninput="d3.select('#charge_distanceMinSliderOutput').text(value); forceProperties.charge.distanceMin=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-	<label title="Maximum distance where force is applied">
-	  distanceMax
-	  <output id="charge_distanceMaxSliderOutput">2000</output>
-	  <input type="range" min="0" max="2000" value="2000" step=".1" oninput="d3.select('#charge_distanceMaxSliderOutput').text(value); forceProperties.charge.distanceMax=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-      </div>
-
-      <div class="force">
-	<p><label><input type="checkbox" checked onchange="forceProperties.collide.enabled = this.checked; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);"> collide</label> Prevents nodes from overlapping</p>
-	<label>
-	  strength
-	  <output id="collide_StrengthSliderOutput">.7</output>
-	  <input type="range" min="0" max="2" value=".7" step=".1" oninput="d3.select('#collide_StrengthSliderOutput').text(value); forceProperties.collide.strength=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-	<label title="Size of nodes">
-	  radius
-	  <output id="collide_radiusSliderOutput">5</output>
-	  <input type="range" min="0" max="100" value="5" step="1" oninput="d3.select('#collide_radiusSliderOutput').text(value); forceProperties.collide.radius=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-	<label title="Higher values increase rigidity of the nodes (WARNING: high values are computationally expensive)">
-	  iterations
-	  <output id="collide_iterationsSliderOutput">1</output>
-	  <input type="range" min="1" max="10" value="1" step="1" oninput="d3.select('#collide_iterationsSliderOutput').text(value); forceProperties.collide.iterations=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-      </div>
-
-      <div class="force">
-	<p><label><input type="checkbox" onchange="forceProperties.forceX.enabled = this.checked; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);"> forceX</label> Acts like gravity. Pulls all points towards an X location.</p>
-	<label>
-	  strength
-	  <output id="forceX_StrengthSliderOutput">.1</output>
-	  <input type="range" min="0" max="1" value=".1" step="0.01" oninput="d3.select('#forceX_StrengthSliderOutput').text(value); forceProperties.forceX.strength=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-	<label title="The X location that the force will push the nodes to (NOTE: This demo multiplies by the svg width)">
-	  x
-	  <output id="forceX_XSliderOutput">.5</output>
-	  <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#forceX_XSliderOutput').text(value); forceProperties.forceX.x=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-      </div>
-
-      <div class="force">
-	<p><label><input type="checkbox" onchange="forceProperties.forceY.enabled = this.checked; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);"> forceY</label> Acts like gravity. Pulls all points towards a Y location.</p>
-	<label>
-	  strength
-	  <output id="forceY_StrengthSliderOutput">.1</output>
-	  <input type="range" min="0" max="1" value=".1" step="0.01" oninput="d3.select('#forceY_StrengthSliderOutput').text(value); forceProperties.forceY.strength=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-	<label title="The Y location that the force will push the nodes to (NOTE: This demo multiplies by the svg height)">
-	  y
-	  <output id="forceY_YSliderOutput">.5</output>
-	  <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#forceY_YSliderOutput').text(value); forceProperties.forceY.y=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-      </div>
-
-      <div class="force">
-	<p><label><input type="checkbox" checked onchange="forceProperties.link.enabled = this.checked; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);"> link</label> Sets link length</p>
-	<label title="The force will push/pull nodes to make links this long">
-	  distance
-	  <output id="link_DistanceSliderOutput">30</output>
-	  <input type="range" min="0" max="100" value="30" step="1" oninput="d3.select('#link_DistanceSliderOutput').text(value); forceProperties.link.distance=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-	<label title="Higher values increase rigidity of the links (WARNING: high values are computationally expensive)">
-	  iterations
-	  <output id="link_IterationsSliderOutput">1</output>
-	  <input type="range" min="1" max="10" value="1" step="1" oninput="d3.select('#link_IterationsSliderOutput').text(value); forceProperties.link.iterations=value; updateAll(data, forceProperties, sizeVar.width, sizeVar.height);">
-	</label>
-      </div>
-      <svg>
-      </svg>
-      <script src="https://d3js.org/d3.v4.min.js"></script>
-      <script src="scripts/graph.js"></script>
-      <script>
-       var sizeVar = { margin : {top: 100, right: 1, bottom: 3, left: 100},
-		       width : width,
-		       height : height};
-       var forceProperties = {
-	 center: {
-	   x: 0.5,
-	   y: 0.5
-	 },
-	 charge: {
-	   enabled: true,
-	   strength: -30,
-	   distanceMin: 1,
-	   distanceMax: 2000
-	 },
-	 collide: {
-	   enabled: true,
-	   strength: .7,
-	   iterations: 1,
-	   radius: 1
-	 },
-	 forceX: {
-	   enabled: true,
-	   strength: .1,
-	   x: .5
-	 },
-	 forceY: {
-	   enabled: true,
-	   strength: .1,
-	   y: .5
-	 },
-	 link: {
-	   enabled: true,
-	   distance: 25,
-	   iterations: 1
-	 }
+    <div class="force">
+      <label title="Threshold of the graph">
+	thresh
+	<output id="threshSliderOutput">.5</output>
+	<input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#threshSliderOutput').text(value); thresh=value; updateAll(forceProperties, sizeVar, thresh);">
+      </label>
+    </div>
+    <center>
+      <svg height="600", width="1400"></svg>
+    </center>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="scripts/graph.js"></script>
+    <script>
+     var sizeVar = { margin : {top: 100, right: 1, bottom: 3, left: 100},
+		     width : width,
+		     height : height};
+     var thresh = 0.5;
+     var forceProperties = {
+       center: {
+	 x: 0.5,
+	 y: 0.5
+       },
+       charge: {
+	 enabled: true,
+	 strength: -30,
+	 distanceMin: 1,
+	 distanceMax: 2000
+       },
+       collide: {
+	 enabled: true,
+	 strength: .7,
+	 iterations: 1,
+	 radius: 5
+       },
+       forceX: {
+	 enabled: true,
+	 strength: .1,
+	 x: .5
+       },
+       forceY: {
+	 enabled: true,
+	 strength: .1,
+	 y: .5
+       },
+       link: {
+	 enabled: true,
+	 distance: 25,
+	 iterations: 1
        }
-       var path = "graphs/barbus/graph.json";
-       //var path = "scripts/miserable.json"
-       d3.json(path, function(error, _graph) {
-	 if (error) throw error;
-	 data = filterGraph(_graph, 0.5);
-	 console.log(data);
-	 draw(data, sizeVar, forceProperties)
-       });
+     }
+     var path = "https://raw.githubusercontent.com/humanpose1/graph_visualizer/main/graphs/Revers/graph.json";
+     // var path = "graphs/Revers/graph.json";
+     //var path = "scripts/miserable.json"
+     d3.json(path, function(error, _graph) {
+       if (error) throw error;
+       data = _graph;
+       currentData = filterGraph(_graph, thresh);
+       console.log(currentData);
+       draw(currentData, sizeVar, forceProperties);
+     });
 
-       var search = d3.select("body").append('center').append('form').attr('onsubmit', 'return false;');
-       var box = search.append('input')
-		       .attr('type', 'text')
-		       .attr('id', 'searchTerm')
-		       .attr('placeholder', 'Type to search...');
+     var search = d3.select("body").append('center').append('form').attr('onsubmit', 'return false;');
+     var box = search.append('input')
+		     .attr('type', 'text')
+		     .attr('id', 'searchTerm')
+		     .attr('placeholder', 'Type to search...');
 
-       var button = search.append('input').attr('type', 'button').attr('value', 'Search');
-       // .on('click', function () { searchNodes(); });
-      </script>
+     var button = search.append('input').attr('type', 'button').attr('value', 'Search')
+			.on('click', function () { searchNodes(); });
+    </script>
   </body>
 </html>
