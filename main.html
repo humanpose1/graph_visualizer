@@ -1,3 +1,4 @@
+<meta charset="UTF-8">
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="css/main.css">
@@ -5,18 +6,38 @@
   </head>
   <body>
     <div class="force">
+      <div>
+	<label for="path_graph">Select a file:</label>
+	<input type="file" name="graph" id="path_graph" accept="application/json">
+	<button type=button onclick='loadGraphFromFile()'>Load Graph</button>
+      </div>
+      <br><br><br>
       <label title="Threshold of the graph">
-	thresh
-	<output id="threshSliderOutput">.5</output>
+	thresh<br>
+	<output id="threshSliderOutput">0.5</output>
 	<input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#threshSliderOutput').text(value); thresh=value; updateAll(forceProperties, sizeVar, thresh);">
       </label>
+      <button type="button" class="btn btn-primary", id="cut" onclick=changeCut()>
+	<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-scissors" viewBox="0 0 16 16">
+	  <path d="M3.5 3.5c-.614-.884-.074-1.962.858-2.5L8 7.226 11.642 1c.932.538 1.472 1.616.858 2.5L8.81 8.61l1.556 2.661a2.5 2.5 0 1 1-.794.637L8 9.73l-1.572 2.177a2.5 2.5 0 1 1-.794-.637L7.19 8.61 3.5 3.5zm2.5 10a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0zm7 0a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0z"/>
+	</svg>
+	Cut
+      </button>
+      <button type="button" class="btn" id="export" onclick="download()">
+	Export
+      </button>
     </div>
     <center>
-      <svg height="600", width="1400"></svg>
+      <svg height="600", width="1400", id="graphsvg"></svg>
     </center>
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="scripts/graph.js"></script>
+    <script src="scripts/graph_editor.js"></script>
+    <script src="scripts/search.js"></script>
+    <script src="scripts/cluster.js"></script>
     <script>
+
+
      var sizeVar = { margin : {top: 100, right: 1, bottom: 3, left: 100},
 		     width : width,
 		     height : height};
@@ -57,22 +78,20 @@
      var path = "https://raw.githubusercontent.com/humanpose1/graph_visualizer/main/graphs/Revers/graph.json";
      // var path = "graphs/Revers/graph.json";
      //var path = "scripts/miserable.json"
-     d3.json(path, function(error, _graph) {
-       if (error) throw error;
-       data = _graph;
-       currentData = filterGraph(_graph, thresh);
-       console.log(currentData);
-       draw(currentData, sizeVar, forceProperties);
-     });
+     loadGraph(path);
+     function loadGraphFromFile() {
+       var file = document.getElementById('path_graph').files[0];
+       var reader = new FileReader();
+       reader.onload = function(event) {
+	 removeGraph();
+	 toggle = 0;
+	 changeCut();
+         loadGraph(event.target.result)
+       };
+       reader.readAsDataURL(file);
+     }
 
-     var search = d3.select("body").append('center').append('form').attr('onsubmit', 'return false;');
-     var box = search.append('input')
-		     .attr('type', 'text')
-		     .attr('id', 'searchTerm')
-		     .attr('placeholder', 'Type to search...');
 
-     var button = search.append('input').attr('type', 'button').attr('value', 'Search')
-			.on('click', function () { searchNodes(); });
     </script>
   </body>
 </html>

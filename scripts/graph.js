@@ -21,7 +21,7 @@
 var node;
 var link;
 var container;
-var svg = d3.select("svg"),
+var svg = d3.select("#graphsvg"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
 
@@ -29,51 +29,87 @@ var svg = d3.select("svg"),
 svg.call(d3.zoom().on('zoom', zoomed));
 var simulation;
 var data;
+var tableCut = {}; // a dictionnary to know if we keep a link or not
+
 var currentData;
+
 var toggle = 0;
+
+var linkedByIndex = {};
+var redLink = {};
+function initLinkedByIndex(){
+  linkedByIndex = {};
+  console.log(data);
+  currentData.links.forEach(function(d) {
+
+    linkedByIndex[d.source.id + ',' + d.target.id] = 1;
+    linkedByIndex[d.target.id + ',' + d.source.id] = 1;
+  });
+}
+
 
 // init variable
 // read json in the call back draw
 // draw: 1) create svg 2) create graph 3) create simulation
 
-function draw(data, sizeVar, forceProperties) {
+function loadGraph(path, initialize=true) {
+  d3.json(path, function(error, _graph) {
+    if (error) throw error;
+    data = _graph;
+    if(initialize){
+      tableCut = {};
+      linkedByIndex = {};
+      redLink = {};
+    }
+    currentData = filterGraphByWeight(_graph, thresh);
+    currentData = filterGraphByCut(currentData);
+    draw(sizeVar, forceProperties);
+  });
+}
 
+function draw(sizeVar, forceProperties) {
   // createSVG(sizeVar.width, sizeVar.height);
-  createGraph(data);
-  createSimulation(data, forceProperties, sizeVar.width, sizeVar.height);
+  // console.log(tableCut);
+  createGraph();
+  createSimulation(forceProperties, sizeVar.width, sizeVar.height);
 }
 
 
 
 
 
-function createGraph(graph) {
-
-  var linkedByIndex = {};
-  graph.links.forEach(function(d) {
-    linkedByIndex[d.source + ',' + d.target] = 1;
-    linkedByIndex[d.target + ',' + d.source] = 1;
-  });
-
+function createGraph() {
   // A function to test if two nodes are neighboring.
   function neighboring(a, b) {
-    return linkedByIndex[a.id + ',' + b.id];
+    return linkedByIndex[a + ',' + b];
   }
   container =
     svg.append("g");
   link = container.append("g")
 		  .attr("class", "links")
 		  .selectAll("line")
-		  .data(graph.links)
-		  .enter().append("line");
+		  .data(currentData.links)
+		  .enter().append("line").on('click', function(d, i) {
+		    if(toggle == 1 && redLink[d.source.id +","+d.target.id] && activatedCut) {
+
+		      tableCut[d.source.id +","+d.target.id] = 1;
+		      tableCut[d.target.id +","+d.source.id] = 1;
+		      currentData = filterGraphByCut(currentData);
+		      d3.select(this).remove();
+		      initLinkedByIndex();
+
+		    }
+		  }
+		  );
 
   // set the data and properties of node circles
   node = container.append("g")
 		  .attr("class", "nodes")
 		  .selectAll("circle")
-		  .data(graph.nodes)
+		  .data(currentData.nodes)
 		  .enter().append("circle")
 		  .on('click', function(d, i) {
+
 		    if (toggle == 0) {
 		      // Ternary operator restyles links and nodes if they are adjacent.
 		      d3.selectAll('line').style('stroke-opacity', function (l) {
@@ -81,16 +117,26 @@ function createGraph(graph) {
 		      }).style('stroke', function (l) {
 			return l.target == d || l.source == d ? "#f00" : "#000";});
 		      d3.selectAll('circle').style('opacity', function (n) {
-			return neighboring(d, n) ? 1 : 0.1;
+			return neighboring(d.id, n.id) ? 1 : 0.1;
 		      });
 		      d3.select(this).style('opacity', 1).style("stroke", "#fff");
 		      toggle = 1;
+		      currentData.nodes.forEach(function(n){
+			if(neighboring(n.id, d.id)){
+			  redLink[d.id + "," + n.id] = 1;
+			  redLink[n.id + "," + d.id] = 1;
+			}
+		      });
+		      console.log(linkedByIndex);
+		      console.log(redLink);
 		    }
 		    else {
 		      // Restore nodes and links to normal opacity.
 		      d3.selectAll('line').style('stroke-opacity', '0.6').style('stroke', "#999");
 		      d3.selectAll('circle').style('opacity', '1').style("stroke", "#315");
 		      toggle = 0;
+		      changeCut();
+		      redLink = {};
 		    }
 		  })
 		  .call(
@@ -112,10 +158,10 @@ function removeGraph() {
 }
 
 
-function createSimulation(data, forceProperties, width, height) {
+function createSimulation(forceProperties, width, height) {
   simulation = d3.forceSimulation();
-  simulation.nodes(data.nodes);
-  initializeForces(data, forceProperties, width, height);
+  simulation.nodes(currentData.nodes);
+  initializeForces(forceProperties, width, height);
   simulation.on(
     "tick",
     function(){
@@ -131,11 +177,11 @@ function createSimulation(data, forceProperties, width, height) {
       d3.select('#alpha_value').style('flex-basis', (simulation.alpha()*100) + '%');
     }
   );
-
+  initLinkedByIndex();
 }
 // update size-related forces
 
-function initializeForces(data, forceProperties, width, height){
+function initializeForces(forceProperties, width, height){
   simulation
     .force("link", d3.forceLink())
     .force("charge", d3.forceManyBody())
@@ -144,11 +190,11 @@ function initializeForces(data, forceProperties, width, height){
     .force("forceX", d3.forceX())
     .force("forceY", d3.forceY());
 
-  updateForces(data, forceProperties, width, height);
+  updateForces(forceProperties, width, height);
 
 }
 
-function updateForces(data, forceProperties, width, height) {
+function updateForces(forceProperties, width, height) {
   var fp = forceProperties;
   simulation.force("center")
 	    .x(width * fp.center.x)
@@ -172,7 +218,7 @@ function updateForces(data, forceProperties, width, height) {
             .id(function(d) {return d.id;})
             .distance(fp.link.distance)
             .iterations(fp.link.iterations)
-            .links(fp.link.enabled ? data.links : []);
+            .links(fp.link.enabled ? currentData.links : []);
 
   // updates ignored until this is run
   // restarts the simulation (important if simulation has already slowed down)
@@ -194,20 +240,7 @@ function updateDisplay() {
 
 
 
-function searchNodes() {
-  var term = document.getElementById('searchTerm').value;
-  var selected = container.selectAll('circle').filter(function (d, i) {
-    return d.id.toLowerCase().search(term.toLowerCase()) == -1;
-  });
-  selected.style('opacity', '0');
 
-  link.style('stroke-opacity', '0');
-  d3.selectAll('circle').transition()
-    .duration(5000)
-    .style('opacity', '1').style("stroke", "#315");
-  d3.selectAll('line').transition().duration(5000).style('stroke-opacity', '0.6').style('stroke', "#999");
-  toggle = 0;
-}
 
 
 
@@ -234,22 +267,50 @@ function zoomed() {
   container.attr("transform", "translate(" + d3.event.transform.x + ", " + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
 }
 
+
+
+
+
 // convenience function to update everything (run after UI input)
 function updateAll(forceProperies, sizeVar, thresh) {
-  currentData = filterGraph(data, thresh);
-  console.log(currentData);
+  currentData = filterGraphByWeight(data, thresh);
+  currentData = filterGraphByCut(currentData);
+  // console.log(currentData);
   removeGraph();
-  draw(currentData, sizeVar, forceProperties);
+  draw(sizeVar, forceProperties);
 }
 
 
-function filterGraph(data, thresh=0.5) {
-  let copy = Object.assign({}, data);
+function filterGraphByWeight(dat, thresh=0.5) {
+  let copy = Object.assign({}, dat);
   copy.links = [];
-  for (let i = 0; i < data.links.length; i++) {
-    if (data.links[i].weight > thresh) {
-      copy.links.push(data.links[i]);
+  // for (let i = 0; i < data.links.length; i++) {
+  //  if (data.links[i].weight > thresh) {
+  //    copy.links.push(data.links[i]);
+  //  }
+  // }
+  dat.links.forEach(function(d) {
+    if ((d.weight > thresh)) {
+      copy.links.push(d);
     }
-  }
+  });
+
   return copy;
 }
+
+
+function filterGraphByCut(dat) {
+  let copy = Object.assign({}, dat);
+  copy.links = [];
+
+  dat.links.forEach(function(d) {
+    if (!tableCut[d.source.id + "," + d.target.id] && !tableCut[d.target.id + "," + d.source.id]) {
+      copy.links.push(d);
+    }
+  });
+  return copy;
+}
+
+
+
+// GRAPH EDITOR
