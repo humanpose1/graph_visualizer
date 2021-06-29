@@ -30,6 +30,7 @@ svg.call(d3.zoom().on('zoom', zoomed));
 var simulation;
 var data;
 var tableCut = {}; // a dictionnary to know if we keep a link or not
+var newLink = []; // an array to store the new links added by the user
 
 var currentData;
 
@@ -60,9 +61,11 @@ function loadGraph(path, initialize=true) {
       tableCut = {};
       linkedByIndex = {};
       redLink = {};
+      newLink = [];
     }
     currentData = filterGraphByWeight(_graph, thresh);
     currentData = filterGraphByCut(currentData);
+    currentData.links = currentData.links.concat(newLink);
     draw(sizeVar, forceProperties);
   });
 }
@@ -115,28 +118,41 @@ function createGraph() {
 		      d3.selectAll('line').style('stroke-opacity', function (l) {
 			return l.target == d || l.source == d ? 1 : 0.1;
 		      }).style('stroke', function (l) {
-			return l.target == d || l.source == d ? "#f00" : "#000";});
+			return l.target == d || l.source == d ? "#f00" : "#000";})
+			.style('stroke-width', function (l) {
+			  return l.target == d || l.source == d ? "3.0px" : "1.5px";});
 		      d3.selectAll('circle').style('opacity', function (n) {
 			return neighboring(d.id, n.id) ? 1 : 0.1;
 		      });
 		      d3.select(this).style('opacity', 1).style("stroke", "#fff");
 		      toggle = 1;
+		      d3.select('#text').append('div').attr("id", "textNode").append("p").text("\n Selected Node: " + d.id+"\n");
+
+		      var txt = "Neighbors:\n";
 		      currentData.nodes.forEach(function(n){
 			if(neighboring(n.id, d.id)){
 			  redLink[d.id + "," + n.id] = 1;
 			  redLink[n.id + "," + d.id] = 1;
+			  txt += (n.id +",");
 			}
 		      });
+		      d3.select("#textNode").append("p").text(txt);
+
+
 		      console.log(linkedByIndex);
 		      console.log(redLink);
 		    }
 		    else {
 		      // Restore nodes and links to normal opacity.
-		      d3.selectAll('line').style('stroke-opacity', '0.6').style('stroke', "#999");
+		      d3.selectAll('line')
+			.style('stroke-opacity', '0.6')
+			.style('stroke', "#999")
+			.style('stroke-width', "1.5px");
 		      d3.selectAll('circle').style('opacity', '1').style("stroke", "#315");
 		      toggle = 0;
 		      changeCut();
 		      redLink = {};
+		      d3.select("#textNode").remove();
 		    }
 		  })
 		  .call(
@@ -155,6 +171,10 @@ function removeGraph() {
   container.remove();
   link.remove();
   node.remove();
+  toggle = 0;
+  changeCut();
+  redLink = {};
+  d3.select("#textNode").remove();
 }
 
 
@@ -275,6 +295,7 @@ function zoomed() {
 function updateAll(forceProperies, sizeVar, thresh) {
   currentData = filterGraphByWeight(data, thresh);
   currentData = filterGraphByCut(currentData);
+  currentData.links = currentData.links.concat(newLink);
   // console.log(currentData);
   removeGraph();
   draw(sizeVar, forceProperties);

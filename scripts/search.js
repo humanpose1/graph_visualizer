@@ -1,4 +1,4 @@
-var search = d3.select("body").append('center').append('form').attr('onsubmit', 'return false;');
+var search = d3.select("#search").append('center').append('form').attr('onsubmit', 'return false;');
 var box = search.append('input')
 		.attr('type', 'text')
 		.attr('id', 'searchTerm')
@@ -21,4 +21,7 @@ function searchNodes() {
     .style('opacity', '1').style("stroke", "#315");
   d3.selectAll('line').transition().duration(5000).style('stroke-opacity', '0.6').style('stroke', "#999");
   toggle = 0;
+  changeCut();
+  redLink = {};
+  d3.select("#textNode").remove();
 }

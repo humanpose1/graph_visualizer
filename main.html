@@ -2,6 +2,7 @@
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/autocomplete.css">
     <style></style>
   </head>
   <body>
@@ -26,10 +27,20 @@
       <button type="button" class="btn" id="export" onclick="download()">
 	Export
       </button>
+      <button type="button" class="btn" id="createLink" onclick="openForm()">
+	Create Link
+      </button>
     </div>
     <center>
       <svg height="600", width="1400", id="graphsvg"></svg>
     </center>
+    <div class="selected-search">
+      <div id="search">
+      </div>
+      <br>
+      <div id="text">
+      </div>
+    </div>
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="scripts/graph.js"></script>
     <script src="scripts/graph_editor.js"></script>
@@ -91,7 +102,7 @@
        reader.readAsDataURL(file);
      }
 
-
+     createPopUpLink();
     </script>
   </body>
 </html>

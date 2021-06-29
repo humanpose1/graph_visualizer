@@ -77,9 +77,44 @@ body {
   top: 1%;
 }
 
+.selected-search {
+    white-space: pre-line;
+}
+
+#textNode {
+    font-size: 12px;
+}
+
 #graphsvg {
     background: #caa;
     flex-basis: 100%;
     min-width: 200px;
 
+}
+
+.formPopup {
+    display: none;
+    position: fixed;
+    left: 45%;
+    top: 5%;
+    transform: translate(-50%, 5%);
+    border: 3px solid #999999;
+    z-index: 9;
+    max-width: 300px;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.formPopup input[type=text]{
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0 20px 0;
+    border: none;
+    background: #eee;
+}
+
+.formPopup input[type=text]:focus {
+
+    background: #bbb;
+    outline: none;
 }
