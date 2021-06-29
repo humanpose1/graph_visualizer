@@ -91,7 +91,7 @@ function exportCSVFile(clusters, fileTitle) {
 }
 
 
-function download() {
+function downloadCluster() {
   clusters = findCluster(currentData);
   exportCSVFile(clusters, "cluster");
 }
