@@ -1,1 +1,1 @@
-# graph_visualizer
+# Tool to visualize graph of similarity between coins.
